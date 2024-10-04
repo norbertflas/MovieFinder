@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'https://tvfinder.netlify.app',
   credentials: true,
 }));
 app.use(express.json());

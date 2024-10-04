@@ -1,13 +1,10 @@
-// server/routes/recommendations.js
 const express = require('express');
 const router = express.Router();
-const {
-  getRecommendations,
-  generateRecommendations,
-} = require('../controllers/recommendationsController');
-const authMiddleware = require('../utils/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/', authMiddleware, getRecommendations);
-router.post('/generate', authMiddleware, generateRecommendations);
+// Przykładowa trasa dla rekomendacji
+router.get('/', authMiddleware, (req, res) => {
+  res.json({ message: 'Recommendations endpoint' });
+});
 
 module.exports = router;

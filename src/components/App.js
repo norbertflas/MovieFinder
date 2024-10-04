@@ -1,58 +1,74 @@
-// client/src/components/App.js
-import { useState, useEffect } from 'react';
-import Quiz from './Quiz';
-import Results from './Results';
-import SearchBar from './SearchBar'; // Poprawna ścieżka
-import { Sun, Moon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Quiz from './components/Quiz';
+import Results from './components/Results';
+import SearchBar from './components/SearchBar';
+import Login from './components/Login';
+import Register from './components/Register';
+import Header from './components/Header';
+import axios from 'axios';
 
 function App() {
   const [recommendations, setRecommendations] = useState(null);
   const [searchResults, setSearchResults] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [user, setUser] = useState(null); // New state for user
 
   useEffect(() => {
-    // Ustawienie klasy 'dark' na elemencie html
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
+    // Check if user is logged in
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/auth/user`, { withCredentials: true });
+        setUser(response.data.user);
+      } catch (error) {
+        console.error('User not authenticated');
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleQuizComplete = (data) => {
     setRecommendations(data);
-    setSearchResults(null); // Reset wyników wyszukiwania
+    setSearchResults(null);
   };
 
   const handleSearchComplete = (data) => {
     setSearchResults(data);
-    setRecommendations(null); // Reset rekomendacji z quizu
+    setRecommendations(null);
   };
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-900'}`}>
-      <header className="py-6 bg-purple-600 text-white flex justify-between items-center px-6">
-        <h1 className="text-3xl font-bold">Rekomendator Filmów i Seriali</h1>
-        <button onClick={toggleDarkMode} className="focus:outline-none">
-          {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-        </button>
-      </header>
-      <SearchBar onSearchComplete={handleSearchComplete} /> {/* Dodana wyszukiwarka */}
-      <main className="container mx-auto px-4">
-        {!recommendations && !searchResults && (
-          <Quiz onComplete={handleQuizComplete} />
-        )}
-        {recommendations && <Results recommendations={recommendations} />}
-        {searchResults && <Results recommendations={searchResults} />}
-      </main>
-      <footer className="py-4 text-center text-gray-600 dark:text-gray-400">
-        © 2024 Rekomendator Filmów i Seriali
-      </footer>
-    </div>
+    <Router>
+      <div className={`min-h-screen ${isDarkMode ? 'bg-base-200 text-base-content' : 'bg-base-100 text-base-content'}`}>
+        <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} user={user} setUser={setUser} />
+        <SearchBar onSearchComplete={handleSearchComplete} />
+        <main className="container mx-auto px-4">
+          <Routes>
+            <Route path="/" element={
+              !recommendations && !searchResults ? (
+                <Quiz onComplete={handleQuizComplete} />
+              ) : (
+                recommendations ? <Results recommendations={recommendations} /> : <Results recommendations={searchResults} />
+              )
+            } />
+            <Route path="/login" element={<Login setUser={setUser} />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </main>
+        <footer className="py-4 text-center text-gray-600 dark:text-gray-400">
+          © 2023 MovieFinder
+        </footer>
+      </div>
+    </Router>
   );
 }
 

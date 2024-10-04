@@ -1,53 +1,61 @@
-// client/src/components/Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import Button from './ui/Button';
-import Input from './ui/Input';
 
 const Login = ({ setUser }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
 
-  const handleLogin = async (e) => {
+  const { email, password } = formData;
+
+  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/auth/login', { email, password }, { withCredentials: true });
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/login`, formData, { withCredentials: true });
+      console.log('Login successful:', response.data);
       setUser(response.data.user);
-      navigate('/');
-    } catch (err) {
-      setError('Nieprawidłowy email lub hasło.');
+      // Możesz przekierować użytkownika po logowaniu lub wyświetlić komunikat
+    } catch (error) {
+      console.error('Login error:', error.response ? error.response.data : error.message);
+      alert(error.response ? error.response.data.message : 'Login failed');
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-200">Logowanie</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleLogin} className="space-y-4">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-base-100 shadow-md rounded-md">
+      <h2 className="text-2xl font-bold mb-4">Login</h2>
+      <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <Input
+          <label className="label">
+            <span className="label-text">Email</span>
+          </label>
+          <input
             type="email"
+            name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={onChange}
             required
-            className="w-full"
+            className="input input-bordered w-full"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Hasło</label>
-          <Input
+          <label className="label">
+            <span className="label-text">Password</span>
+          </label>
+          <input
             type="password"
+            name="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={onChange}
             required
-            className="w-full"
+            className="input input-bordered w-full"
           />
         </div>
-        <Button type="submit" className="w-full">Zaloguj się</Button>
+        <Button type="submit">Login</Button>
       </form>
     </div>
   );

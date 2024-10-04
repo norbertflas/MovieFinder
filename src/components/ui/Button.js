@@ -1,13 +1,10 @@
-// client/src/components/ui/Button.js
 import React from 'react';
 
-const Button = ({ children, onClick, type = 'button', className = '', disabled = false }) => {
+const Button = ({ children, ...props }) => {
   return (
     <button
-      type={type}
-      onClick={onClick}
-      className={`px-4 py-2 rounded-md ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
-      disabled={disabled}
+      {...props}
+      className={`btn btn-primary ${props.className}`}
     >
       {children}
     </button>

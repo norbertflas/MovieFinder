@@ -1,52 +1,74 @@
-// client/src/components/Register.js
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import Button from './ui/Button';
-import Input from './ui/Input';
 
 const Register = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+  });
 
-  const handleRegister = async (e) => {
+  const { username, email, password } = formData;
+
+  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/auth/register', { email, password });
-      navigate('/login');
-    } catch (err) {
-      setError('Rejestracja nie powiodła się.');
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, formData, { withCredentials: true });
+      console.log('Registration successful:', response.data);
+      // Możesz przekierować użytkownika po rejestracji lub wyświetlić komunikat
+    } catch (error) {
+      console.error('Registration error:', error.response ? error.response.data : error.message);
+      alert(error.response ? error.response.data.message : 'Registration failed');
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-200">Rejestracja</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleRegister} className="space-y-4">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-base-100 shadow-md rounded-md">
+      <h2 className="text-2xl font-bold mb-4">Register</h2>
+      <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <Input
+          <label className="label">
+            <span className="label-text">Username</span>
+          </label>
+          <input
+            type="text"
+            name="username"
+            value={username}
+            onChange={onChange}
+            required
+            className="input input-bordered w-full"
+          />
+        </div>
+        <div>
+          <label className="label">
+            <span className="label-text">Email</span>
+          </label>
+          <input
             type="email"
+            name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={onChange}
             required
-            className="w-full"
+            className="input input-bordered w-full"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Hasło</label>
-          <Input
+          <label className="label">
+            <span className="label-text">Password</span>
+          </label>
+          <input
             type="password"
+            name="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={onChange}
             required
-            className="w-full"
+            className="input input-bordered w-full"
           />
         </div>
-        <Button type="submit" className="w-full">Zarejestruj się</Button>
+        <Button type="submit">Register</Button>
       </form>
     </div>
   );

@@ -1,12 +1,14 @@
-// client/tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./client/src/**/*.{js,jsx,ts,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
     "./public/index.html",
   ],
-  darkMode: 'media', // lub 'class'
   theme: {
     extend: {},
   },
-  plugins: [],
-}
+  plugins: [require('daisyui')],
+  daisyui: {
+    themes: ["light", "dark"], // Możesz dodać inne motywy
+  },
+};

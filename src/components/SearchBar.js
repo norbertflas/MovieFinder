@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const SearchBar = ({ onSearchComplete }) => {
   const [query, setQuery] = useState('');
-  const [searchType, setSearchType] = useState('movie'); // Przykładowy typ wyszukiwania
+  const [searchType, setSearchType] = useState('movie'); // 'movie' or 'series'
   const [loading, setLoading] = useState(false);
 
   // Utworzenie instancji axios z bazowym URL z zmiennej środowiskowej
@@ -33,34 +33,36 @@ const SearchBar = ({ onSearchComplete }) => {
         onSearchComplete(response.data.results);
       } else {
         alert('Nie znaleziono wyników.');
+        onSearchComplete([]); // Przekaż pustą tablicę
       }
     } catch (error) {
       setLoading(false);
       console.error('Error during search:', error.response ? error.response.data : error.message);
       alert('Wystąpił problem podczas wyszukiwania. Spróbuj ponownie później.');
+      onSearchComplete([]); // Przekaż pustą tablicę w przypadku błędu
     }
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex items-center justify-center my-4">
+    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center justify-center my-6 gap-4">
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Szukaj filmów lub seriali..."
-        className="p-2 border border-gray-300 rounded-l-md focus:outline-none"
+        className="p-3 border border-gray-300 rounded-md w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
       <select
         value={searchType}
         onChange={(e) => setSearchType(e.target.value)}
-        className="p-2 border-t border-b border-gray-300 focus:outline-none"
+        className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
       >
         <option value="movie">Film</option>
         <option value="series">Serial</option>
       </select>
       <button
         type="submit"
-        className="p-2 bg-purple-600 text-white rounded-r-md hover:bg-purple-700 focus:outline-none"
+        className="p-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
         disabled={loading}
       >
         {loading ? 'Szukam...' : 'Szukaj'}

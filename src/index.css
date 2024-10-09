@@ -1,7 +1,7 @@
+/* client/src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 /* Dodatkowe style */
 body {

@@ -1,3 +1,4 @@
+// client/src/components/Header.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
@@ -11,7 +12,7 @@ const Header = ({ isDarkMode, toggleDarkMode, user, setUser }) => {
           MovieFinder
         </Link>
       </div>
-      <div className="flex-none">
+      <div className="flex-none flex items-center space-x-4">
         <button onClick={toggleDarkMode} className="btn btn-ghost">
           {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
         </button>

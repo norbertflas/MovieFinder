@@ -2,16 +2,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const SearchBar = ({ onSearchComplete }) => {
+const SearchBar = ({ onSearch }) => {
   const [query, setQuery] = useState('');
-  const [searchType, setSearchType] = useState('movie'); // 'movie' or 'series'
+  const [searchType, setSearchType] = useState('movie'); // movie, series, actor, director
   const [loading, setLoading] = useState(false);
-
-  // Utworzenie instancji axios z bazowym URL z zmiennej środowiskowej
-  const api = axios.create({
-    baseURL: process.env.REACT_APP_BACKEND_URL,
-    withCredentials: true,
-  });
+  const [error, setError] = useState(null);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -21,52 +16,48 @@ const SearchBar = ({ onSearchComplete }) => {
     }
 
     setLoading(true);
+    setError(null);
+
     try {
-      const response = await api.get('/api/search', {
-        params: {
-          query: query.trim(),
-          type: searchType,
-        },
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/search`, {
+        params: { query, type: searchType },
       });
+      onSearch(response.data.results);
+    } catch (err) {
+      console.error('Błąd wyszukiwania:', err.response ? err.response.data : err.message);
+      setError(err.response ? err.response.data.message : 'Wyszukiwanie nie powiodło się.');
+    } finally {
       setLoading(false);
-      if (response.data.results && response.data.results.length > 0) {
-        onSearchComplete(response.data.results);
-      } else {
-        alert('Nie znaleziono wyników.');
-        onSearchComplete([]); // Przekaż pustą tablicę
-      }
-    } catch (error) {
-      setLoading(false);
-      console.error('Error during search:', error.response ? error.response.data : error.message);
-      alert('Wystąpił problem podczas wyszukiwania. Spróbuj ponownie później.');
-      onSearchComplete([]); // Przekaż pustą tablicę w przypadku błędu
     }
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center justify-center my-6 gap-4">
+    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4">
+      <select
+        value={searchType}
+        onChange={(e) => setSearchType(e.target.value)}
+        className="p-2 border rounded"
+      >
+        <option value="movie">Film</option>
+        <option value="series">Serial</option>
+        <option value="actor">Aktor</option>
+        <option value="director">Reżyser</option>
+      </select>
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Szukaj filmów lub seriali..."
-        className="p-3 border border-gray-300 rounded-md w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        placeholder="Wyszukaj..."
+        className="p-2 border rounded flex-grow"
       />
-      <select
-        value={searchType}
-        onChange={(e) => setSearchType(e.target.value)}
-        className="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-      >
-        <option value="movie">Film</option>
-        <option value="series">Serial</option>
-      </select>
       <button
         type="submit"
-        className="p-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         disabled={loading}
       >
         {loading ? 'Szukam...' : 'Szukaj'}
       </button>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
     </form>
   );
 };

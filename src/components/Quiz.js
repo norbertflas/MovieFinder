@@ -25,19 +25,30 @@ const Quiz = ({ onComplete }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (answers.selectedServices.length === 0) {
-      alert('Proszę wybrać co najmniej jeden serwis VOD.');
-      return;
-    }
     setLoading(true);
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/quiz`, { answers }, { withCredentials: true });
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/quiz`,
+        { answers },
+        { withCredentials: true }
+      );
       setLoading(false);
       onComplete(response.data.recommendations);
     } catch (error) {
       setLoading(false);
-      console.error('Quiz submission error:', error.response ? error.response.data : error.message);
-      alert(error.response ? error.response.data.message : 'Quiz submission failed');
+      if (error.response) {
+        // Błąd z backendu
+        console.error('Backend error:', error.response.data);
+        alert(`Błąd: ${error.response.data.message}`);
+      } else if (error.request) {
+        // Brak odpowiedzi od backendu
+        console.error('No response from backend:', error.request);
+        alert('Brak odpowiedzi od serwera. Spróbuj ponownie później.');
+      } else {
+        // Inny błąd
+        console.error('Error:', error.message);
+        alert('Wystąpił nieoczekiwany błąd.');
+      }
     }
   };
 

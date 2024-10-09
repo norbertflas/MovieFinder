@@ -1,8 +1,9 @@
+// server/routes/search.js
 const express = require('express');
 const router = express.Router();
-const { searchPerson } = require('../controllers/searchController');
+const { searchContent } = require('../controllers/searchController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.get('/', authMiddleware, searchPerson);
+router.get('/', authMiddleware, searchContent);
 
 module.exports = router;

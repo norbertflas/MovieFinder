@@ -1,4 +1,4 @@
-require('dotenv').config();
+// server/server.js
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -8,6 +8,7 @@ const recommendationsRoutes = require('./routes/recommendations');
 const searchRoutes = require('./routes/search');
 const quizRoutes = require('./routes/quiz');
 const userRoutes = require('./routes/user');
+require('dotenv').config(); // Upewnij się, że zmienne środowiskowe są załadowane
 
 const app = express();
 const PORT = process.env.PORT || 5000;

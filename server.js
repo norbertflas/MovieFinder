@@ -28,7 +28,6 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Konfiguracja CORS
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'https://tvfinder.netlify.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
 

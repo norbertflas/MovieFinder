@@ -1,151 +1,206 @@
 // client/src/components/Quiz.js
-import React, { useState } from 'react';
-import Button from './ui/Button';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Quiz = ({ onComplete }) => {
-  const [answers, setAnswers] = useState({
-    favoriteGenre: '',
-    selectedServices: []
-  });
-  const [loading, setLoading] = useState(false);
+const questions = [
+  {
+    id: 1,
+    question: 'Wybierz preferowane gatunki (możesz wybrać kilka):',
+    type: 'checkbox',
+    options: [
+      { value: '28', label: 'Akcja' },
+      { value: '12', label: 'Przygodowy' },
+      { value: '16', label: 'Animacja' },
+      { value: '35', label: 'Komedia' },
+      { value: '80', label: 'Kryminał' },
+      { value: '99', label: 'Dokumentalny' },
+      { value: '18', label: 'Dramat' },
+      { value: '10751', label: 'Familijny' },
+      { value: '14', label: 'Fantasy' },
+      { value: '36', label: 'Historyczny' },
+      { value: '27', label: 'Horror' },
+      { value: '10402', label: 'Muzyczny' },
+      { value: '9648', label: 'Tajemnica' },
+      { value: '10749', label: 'Romans' },
+      { value: '878', label: 'Science Fiction' },
+      { value: '10770', label: 'Film TV' },
+      { value: '53', label: 'Thriller' },
+      { value: '10752', label: 'Wojenny' },
+      { value: '37', label: 'Western' },
+    ],
+    required: true,
+  },
+  {
+    id: 2,
+    question: 'Podaj zakres dat premiery (opcjonalne):',
+    type: 'date-range',
+    required: false,
+  },
+  // Dodaj więcej pytań...
+];
 
-  const handleGenreChange = (e) => {
-    setAnswers({ ...answers, favoriteGenre: e.target.value });
+const Quiz = ({ onComplete }) => {
+  const [answers, setAnswers] = useState({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Inicjalizacja odpowiedzi dla pytań typu checkbox
+    const initialAnswers = questions.reduce((acc, question) => {
+      if (question.type === 'checkbox') {
+        acc[question.id] = [];
+      }
+      return acc;
+    }, {});
+    setAnswers(initialAnswers);
+  }, []);
+
+  const handleCheckboxChange = (questionId, optionValue) => {
+    setAnswers(prevAnswers => {
+      const currentValues = prevAnswers[questionId] || [];
+      if (currentValues.includes(optionValue)) {
+        return {
+          ...prevAnswers,
+          [questionId]: currentValues.filter((v) => v !== optionValue),
+        };
+      } else {
+        return {
+          ...prevAnswers,
+          [questionId]: [...currentValues, optionValue],
+        };
+      }
+    });
   };
 
-  const handleServiceChange = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setAnswers(prev => ({ ...prev, selectedServices: [...prev.selectedServices, value] }));
-    } else {
-      setAnswers(prev => ({ ...prev, selectedServices: prev.selectedServices.filter(service => service !== value) }));
+  const handleDateRangeChange = (questionId, field, value) => {
+    setAnswers(prevAnswers => ({
+      ...prevAnswers,
+      [questionId]: {
+        ...prevAnswers[questionId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+  const handleNext = () => {
+    if (currentQuestion.required && !isAnswerValid(currentQuestion.id)) {
+      setError('To pytanie jest wymagane.');
+      return;
     }
+    setError(null);
+    setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+  };
+
+  const handlePrevious = () => {
+    setCurrentQuestionIndex(prevIndex => prevIndex - 1);
+    setError(null);
+  };
+
+  const isAnswerValid = (questionId) => {
+    const answer = answers[questionId];
+    if (currentQuestion.type === 'checkbox') {
+      return answer && answer.length > 0;
+    }
+    if (currentQuestion.type === 'date-range') {
+      return answer && answer.from && answer.to;
+    }
+    return !!answer;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (currentQuestion.required && !isAnswerValid(currentQuestion.id)) {
+      setError('To pytanie jest wymagane.');
+      return;
+    }
     setLoading(true);
+    setError(null);
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/quiz`,
         { answers },
         { withCredentials: true }
       );
-      setLoading(false);
       onComplete(response.data.recommendations);
     } catch (error) {
+      console.error('Błąd podczas przetwarzania quizu:', error);
+      setError('Wystąpił błąd podczas przetwarzania quizu. Spróbuj ponownie później.');
+    } finally {
       setLoading(false);
-      if (error.response) {
-        // Błąd z backendu
-        console.error('Backend error:', error.response.data);
-        alert(`Błąd: ${error.response.data.message}`);
-      } else if (error.request) {
-        // Brak odpowiedzi od backendu
-        console.error('No response from backend:', error.request);
-        alert('Brak odpowiedzi od serwera. Spróbuj ponownie później.');
-      } else {
-        // Inny błąd
-        console.error('Error:', error.message);
-        alert('Wystąpił nieoczekiwany błąd.');
-      }
     }
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 bg-base-100 shadow-md rounded-md">
-      <h2 className="text-2xl font-bold mb-4">Movie Quiz</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Favorite Genre */}
-        <div>
-          <label className="label">
-            <span className="label-text">Favorite Genre</span>
+    <div className="quiz-container max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4">{currentQuestion.question}</h2>
+      {currentQuestion.type === 'checkbox' && (
+        <div className="space-y-2">
+          {currentQuestion.options.map((option) => (
+            <label key={option.value} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                value={option.value}
+                checked={(answers[currentQuestion.id] || []).includes(option.value)}
+                onChange={() => handleCheckboxChange(currentQuestion.id, option.value)}
+                className="form-checkbox"
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+      {currentQuestion.type === 'date-range' && (
+        <div className="flex space-x-4">
+          <label className="flex flex-col">
+            <span>Data od:</span>
+            <input
+              type="date"
+              onChange={(e) =>
+                handleDateRangeChange(currentQuestion.id, 'from', e.target.value)
+              }
+              className="form-input mt-1"
+            />
           </label>
-          <select
-            name="favoriteGenre"
-            value={answers.favoriteGenre}
-            onChange={handleGenreChange}
-            required
-            className="select select-bordered w-full"
+          <label className="flex flex-col">
+            <span>Data do:</span>
+            <input
+              type="date"
+              onChange={(e) =>
+                handleDateRangeChange(currentQuestion.id, 'to', e.target.value)
+              }
+              className="form-input mt-1"
+            />
+          </label>
+        </div>
+      )}
+      {!currentQuestion.required && (
+        <p className="text-gray-500 italic mt-2">To pytanie jest opcjonalne. Możesz je pominąć.</p>
+      )}
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      <div className="mt-6 flex justify-between">
+        {currentQuestionIndex > 0 && (
+          <button onClick={handlePrevious} className="btn btn-secondary">
+            Wstecz
+          </button>
+        )}
+        {isLastQuestion ? (
+          <button
+            onClick={handleSubmit}
+            className="btn btn-primary"
+            disabled={loading}
           >
-            <option value="">Select Genre</option>
-            <option value="28">Action</option>
-            <option value="12">Adventure</option>
-            <option value="16">Animation</option>
-            <option value="35">Comedy</option>
-            <option value="80">Crime</option>
-            <option value="99">Documentary</option>
-            <option value="18">Drama</option>
-            <option value="10751">Family</option>
-            <option value="14">Fantasy</option>
-            <option value="36">History</option>
-            <option value="27">Horror</option>
-            <option value="10402">Music</option>
-            <option value="9648">Mystery</option>
-            <option value="10749">Romance</option>
-            <option value="878">Science Fiction</option>
-            <option value="10770">TV Movie</option>
-            <option value="53">Thriller</option>
-            <option value="10752">War</option>
-            <option value="37">Western</option>
-          </select>
-        </div>
-
-        {/* Available on (VOD Services) */}
-        <div>
-          <label className="label">
-            <span className="label-text">Available on:</span>
-          </label>
-          <div className="flex flex-wrap gap-4">
-            <label className="label cursor-pointer">
-              <input
-                type="checkbox"
-                value="netflix"
-                checked={answers.selectedServices.includes('netflix')}
-                onChange={handleServiceChange}
-                className="checkbox checkbox-primary"
-              />
-              <span className="ml-2">Netflix</span>
-            </label>
-            <label className="label cursor-pointer">
-              <input
-                type="checkbox"
-                value="hulu"
-                checked={answers.selectedServices.includes('hulu')}
-                onChange={handleServiceChange}
-                className="checkbox checkbox-primary"
-              />
-              <span className="ml-2">Hulu</span>
-            </label>
-            <label className="label cursor-pointer">
-              <input
-                type="checkbox"
-                value="amazon_prime"
-                checked={answers.selectedServices.includes('amazon_prime')}
-                onChange={handleServiceChange}
-                className="checkbox checkbox-primary"
-              />
-              <span className="ml-2">Amazon Prime</span>
-            </label>
-            <label className="label cursor-pointer">
-              <input
-                type="checkbox"
-                value="disney_plus"
-                checked={answers.selectedServices.includes('disney_plus')}
-                onChange={handleServiceChange}
-                className="checkbox checkbox-primary"
-              />
-              <span className="ml-2">Disney+</span>
-            </label>
-            {/* Dodaj więcej serwisów według potrzeb */}
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Processing...' : 'Submit Quiz'}
-        </Button>
-      </form>
+            {loading ? 'Przetwarzanie...' : 'Zakończ'}
+          </button>
+        ) : (
+          <button onClick={handleNext} className="btn btn-primary">
+            Dalej
+          </button>
+        )}
+      </div>
     </div>
   );
 };

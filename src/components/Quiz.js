@@ -2,6 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const vodServices = [
+  { value: 'netflix', label: 'Netflix' },
+  { value: 'max', label: 'MAX' },
+  { value: 'amazon', label: 'Amazon Prime Video' },
+  { value: 'disney', label: 'Disney+' },
+  { value: 'skyshowtime', label: 'Sky Showtime' },
+  { value: 'appletv', label: 'Apple TV+' },
+  { value: 'rakuten', label: 'Rakuten TV' },
+  { value: 'via', label: 'ViaPlay' },
+  // Dodaj inne serwisy VOD w Polsce...
+];
+
 const questions = [
   {
     id: 1,
@@ -32,6 +44,13 @@ const questions = [
   },
   {
     id: 2,
+    question: 'Wybierz dostępne serwisy VOD:',
+    type: 'checkbox',
+    options: vodServices,
+    required: true,
+  },
+  {
+    id: 3,
     question: 'Podaj zakres dat premiery (opcjonalne):',
     type: 'date-range',
     required: false,
@@ -125,7 +144,11 @@ const Quiz = ({ onComplete }) => {
         { answers },
         { withCredentials: true }
       );
-      onComplete(response.data.recommendations);
+      // Filtruj rekomendacje na podstawie wybranych serwisów VOD
+      const filteredRecommendations = response.data.recommendations.filter(item =>
+        item.vodServices.some(service => answers[2].includes(service))
+      );
+      onComplete(filteredRecommendations);
     } catch (error) {
       console.error('Błąd podczas przetwarzania quizu:', error);
       setError('Wystąpił błąd podczas przetwarzania quizu. Spróbuj ponownie później.');

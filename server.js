@@ -1,52 +1,46 @@
-// server/server.js
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-const authRoutes = require('./routes/auth');
-const recommendationsRoutes = require('./routes/recommendations');
-const searchRoutes = require('./routes/search');
-const quizRoutes = require('./routes/quiz');
-const userRoutes = require('./routes/user');
-require('dotenv').config(); // Upewnij się, że zmienne środowiskowe są załadowane
-
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Połączenie z MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('Connected to MongoDB');
-})
-.catch((err) => {
-  console.error('MongoDB connection error:', err);
-});
 
 // Konfiguracja CORS
+const allowedOrigin = process.env.CORS_ORIGIN || 'https://tvfinder.netlify.app';
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://tvfinder.netlify.app',
+  origin: allowedOrigin,
   credentials: true,
 }));
 
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// Trasy
-app.use('/api/auth', authRoutes);
-app.use('/api/recommendations', recommendationsRoutes);
-app.use('/api/search', searchRoutes);
-app.use('/api/quiz', quizRoutes);
-app.use('/api/user', userRoutes);
+// Połączenie z MongoDB
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/moviefinder';
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.log('MongoDB connection error:', err));
 
-// Obsługa błędów 404
-app.use((req, res, next) => {
-  res.status(404).send('Page Not Found');
+// Przykładowe endpointy
+app.get('/api/auth/user', (req, res) => {
+  res.json({ user: 'Authenticated User' });
 });
 
-// Uruchomienie serwera
+app.get('/api/search', (req, res) => {
+  const query = req.query.query;
+  const type = req.query.type;
+  res.json({ results: [`Result for ${query} as ${type}`] });
+});
+
+app.post('/api/quiz', (req, res) => {
+  const answers = req.body.answers;
+  res.json({ recommendations: ['Recommendation 1', 'Recommendation 2'] });
+});
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

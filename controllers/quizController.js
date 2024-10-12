@@ -1,4 +1,6 @@
 const axios = require('axios');
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 const processQuiz = async (req, res) => {
   const { answers } = req.body;

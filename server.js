@@ -40,6 +40,10 @@ app.post('/api/quiz', (req, res) => {
   res.json({ recommendations: ['Recommendation 1', 'Recommendation 2'] });
 });
 
+app.use((req, res) => {
+    res.status(404).send('Nie znaleziono zasobu');
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

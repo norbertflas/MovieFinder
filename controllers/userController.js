@@ -1,5 +1,6 @@
 // server/controllers/userController.js
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 // Pobieranie ocen użytkownika
 const getUserRatings = async (req, res) => {

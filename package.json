@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "tmdb-quiz-app-client",
   "version": "1.0.0",
@@ -41,3 +42,6 @@
     "tailwindcss": "^3.4.13"
   }
 }
+=======
+{"name":"moviefinder-backend","version":"1.0.0","description":"Backend for MovieFinder application","main":"index.js","scripts":{"start":"node server.js","dev":"nodemon server.js"},"dependencies":{"axios":"^1.7.7","bcryptjs":"^2.4.3","cookie-parser":"^1.4.7","cors":"^2.8.5","express":"^4.21.1","mongoose":"^8.7.1"},"devDependencies":{"nodemon":"^2.0.22","typescript":"5.6.3"},"engines":{"node":"20.x","npm":"10.x"},"repository":{"type":"git","url":"https://github.com/norbertflas/MovieFinder.git"},"keywords":[],"author":"Norbert","license":"ISC"}
+>>>>>>> 97abf7483ec68d3ef7fc952439d00dc884fecd25

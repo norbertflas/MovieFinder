@@ -1,32 +1,35 @@
 const express = require('express');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-const authRoutes = require('./routes/auth'); // Importowanie pliku routingu
-
 const app = express();
 
 // Konfiguracja CORS
-const allowedOrigin = process.env.CORS_ORIGIN || 'https://tvfinder.netlify.app';
 app.use(cors({
-  origin: allowedOrigin,
+  origin: process.env.CORS_ORIGIN || 'https://tvfinder.netlify.app',
   credentials: true,
 }));
 
 // Middleware
 app.use(express.json());
-app.use(cookieParser());
-
-// Użycie plików routingu
-app.use('/api/auth', authRoutes); // Użycie pliku routingu
-
-// Definicje innych endpointów...
 
 // Połączenie z MongoDB
-const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/moviefinder';
-mongoose.connect(mongoURI)
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
+
+// Endpoint wyszukiwania
+app.get('/api/search', (req, res) => {
+  const { query, type } = req.query;
+  // Tutaj dodaj logikę wyszukiwania
+  res.json({ results: [`Result for ${query} as ${type}`] });
+});
+
+// Endpoint quizu
+app.post('/api/quiz', (req, res) => {
+  const answers = req.body.answers;
+  // Tutaj dodaj logikę przetwarzania quizu
+  res.json({ recommendations: ['Recommendation 1', 'Recommendation 2'] });
+});
 
 // Start serwera
 const PORT = process.env.PORT || 5000;

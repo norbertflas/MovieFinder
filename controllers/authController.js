@@ -1,6 +1,6 @@
 // server/controllers/authController.js
 const User = require('../models/User'); 
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const registerUser = async (req, res) => {
@@ -91,7 +91,7 @@ const loginUser = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     // Zakładam, że middleware authMiddleware ustawia req.user
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id).select('-password'); // Pobierz użytkownika bez hasła
     res.json({ user });
   } catch (error) {
     console.error('Get User Error:', error.message);
